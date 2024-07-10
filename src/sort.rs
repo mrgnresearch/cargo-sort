@@ -14,7 +14,11 @@ pub struct Matcher<'a> {
 
 pub const MATCHER: Matcher<'_> = Matcher {
     heading: &["dependencies", "dev-dependencies", "build-dependencies"],
-    heading_key: &[("workspace", "members"), ("workspace", "exclude")],
+    heading_key: &[
+        ("workspace", "members"),
+        ("workspace", "exclude"),
+        ("workspace", "dependencies"),
+    ],
 };
 
 /// A state machine to track collection of headings.
@@ -43,10 +47,20 @@ pub fn sort_toml(
         // `SomeMap.entry(key).or_insert(Item::None)` we only want to do it if we
         // know the heading is there already
         if toml.as_table().contains_key(heading) {
-            if let Item::Table(table) = &mut toml[heading] {
+            if let Item::Table(table) = toml.get_mut(&heading).unwrap() {
                 if table.contains_key(key) {
-                    if let Item::Value(Value::Array(arr)) = &mut table[key] {
+                    if let Item::Value(Value::Array(arr)) = table.get_mut(key).unwrap() {
                         sort_array(arr);
+                    }
+
+                    match table.get_mut(key).unwrap() {
+                        Item::Value(Value::Array(arr)) => {
+                            sort_array(arr);
+                        }
+                        Item::Table(table) => {
+                            sort_by_group(table);
+                        }
+                        _ => {}
                     }
                 }
             }

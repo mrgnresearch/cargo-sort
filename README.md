@@ -67,6 +67,7 @@ included in sort check is:
 ["build-dependencies"]
 ["workspace.members"]
 ["workspace.exclude"]
+["workspace.dependencies"]
 ```
 
 If you have a header to add open a PR, they are welcome.
